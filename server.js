@@ -57,7 +57,7 @@ const path = require('path');
 
 // 이 부분을 라우트 정의 후, app.listen() 전에 추가하세요
 app.get('*', (req, res) => {
-  res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
+  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
 });
 
 app.use(express.static(path.join(__dirname, 'client/build')));
