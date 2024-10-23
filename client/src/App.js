@@ -5,6 +5,8 @@ import StockInForm from './components/StockInForm';
 import UsageReport from './components/UsageReport';
 import './App.css';
 
+/* eslint-disable no-unused-vars */
+
 function App() {
   const [products, setProducts] = useState([]);
   const [inventory, setInventory] = useState([]);
@@ -71,7 +73,7 @@ function App() {
       </button>
       {showProductForm && <ProductForm addProduct={addProduct} />}
       <button onClick={() => setShowStockInForm(!showStockInForm)}>
-        {showStockInForm ? '입고 닫기' : '입고'}
+        {showStockInForm ? '���고 닫기' : '입고'}
       </button>
       {showStockInForm && <StockInForm products={products} addInventory={addInventory} />}
       <InventoryList 
