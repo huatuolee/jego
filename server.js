@@ -12,13 +12,16 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 10000;
 
-mongoose.connect('mongodb://localhost/inventory_db', { useNewUrlParser: true, useUnifiedTopology: true })
+const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/jego-backend';
+mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('MongoDB에 연결되었습니다.'))
   .catch(err => console.error('MongoDB 연결 오류:', err));
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://tiny-pastelito-227085.netlify.app'
+}));
 app.use(express.json());
 
 // 라우트 설정은 여기에 추가됩니다.
@@ -46,4 +49,15 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => console.log('클라이언트 연결 해제'));
 });
 
-server.listen(PORT, () => console.log(`서버가 ${PORT}번 포트에서 실행 중입니다`));
+app.listen(PORT, () => {
+  console.log(`서버가 ${PORT}번 포트에서 실행 중입니다`);
+});
+
+const path = require('path');
+
+// 이 부분을 라우트 정의 후, app.listen() 전에 추가하세요
+app.get('*', (req, res) => {
+  res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
+});
+
+app.use(express.static(path.join(__dirname, 'client/build')));

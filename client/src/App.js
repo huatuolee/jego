@@ -73,7 +73,7 @@ function App() {
       </button>
       {showProductForm && <ProductForm addProduct={addProduct} />}
       <button onClick={() => setShowStockInForm(!showStockInForm)}>
-        {showStockInForm ? '���고 닫기' : '입고'}
+        {showStockInForm ? '입고 닫기' : '입고'}
       </button>
       {showStockInForm && <StockInForm products={products} addInventory={addInventory} />}
       <InventoryList 
