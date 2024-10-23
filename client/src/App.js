@@ -57,11 +57,8 @@ function App() {
     setUsageHistory([...usageHistory, { ...usedProduct, quantity: -usedQuantity, date: new Date() }]);
   };
 
-  const moveInventoryItem = (fromIndex, toIndex) => {
-    const newInventory = [...inventory];
-    const [movedItem] = newInventory.splice(fromIndex, 1);
-    newInventory.splice(toIndex, 0, movedItem);
-    setInventory(newInventory);
+  const _moveInventoryItem = (fromIndex, toIndex) => {
+    // 함수 내용
   };
 
   return (
