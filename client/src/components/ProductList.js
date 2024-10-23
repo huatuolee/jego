@@ -1,23 +1,30 @@
 import React from 'react';
-import { List, ListItem, ListItemText, TextField } from '@mui/material';
 
-const ProductList = ({ products }) => {
+const ProductList = ({ products, updateProduct, deleteProduct }) => {
+  const handleQuantityChange = (id, newQuantity) => {
+    const product = products.find(p => p.id === id);
+    if (product) {
+      updateProduct(id, { ...product, quantity: Math.max(0, newQuantity) });
+    }
+  };
+
   return (
-    <List>
+    <ul className="product-list">
       {products.map((product) => (
-        <ListItem key={product._id}>
-          <ListItemText
-            primary={product.name}
-            secondary={`소재: ${product.material}, 두께: ${product.thickness}`}
-          />
-          <TextField
-            type="number"
-            value={product.quantity}
-            onChange={(e) => console.log('수량 변경:', e.target.value)}
-          />
-        </ListItem>
+        <li key={product.id} className="product-item">
+          <div className="product-info">
+            <span className="product-name">{product.name}</span>
+            <span className="product-details">({product.material}, {product.size}, {product.thickness})</span>
+          </div>
+          <div className="product-actions">
+            <button onClick={() => handleQuantityChange(product.id, product.quantity - 1)}>-</button>
+            <span className="product-quantity">{product.quantity}</span>
+            <button onClick={() => handleQuantityChange(product.id, product.quantity + 1)}>+</button>
+            <button className="delete-btn" onClick={() => deleteProduct(product.id)}>삭제</button>
+          </div>
+        </li>
       ))}
-    </List>
+    </ul>
   );
 };
 

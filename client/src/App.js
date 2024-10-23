@@ -1,50 +1,88 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Grid } from '@mui/material';
-import axios from 'axios';
-import ProductList from './components/ProductList';
 import ProductForm from './components/ProductForm';
-import InventoryChart from './components/InventoryChart';
+import InventoryList from './components/InventoryList';
+import StockInForm from './components/StockInForm';
+import UsageReport from './components/UsageReport';
+import './App.css';
 
 function App() {
   const [products, setProducts] = useState([]);
+  const [inventory, setInventory] = useState([]);
+  const [showProductForm, setShowProductForm] = useState(false);
+  const [showStockInForm, setShowStockInForm] = useState(false);
+  const [usageHistory, setUsageHistory] = useState([]);
+  const [stockInHistory, setStockInHistory] = useState([]);
 
   useEffect(() => {
-    fetchProducts();
+    const savedProducts = JSON.parse(localStorage.getItem('products')) || [];
+    const savedInventory = JSON.parse(localStorage.getItem('inventory')) || [];
+    const savedUsageHistory = JSON.parse(localStorage.getItem('usageHistory')) || [];
+    const savedStockInHistory = JSON.parse(localStorage.getItem('stockInHistory')) || [];
+    setProducts(savedProducts);
+    setInventory(savedInventory);
+    setUsageHistory(savedUsageHistory);
+    setStockInHistory(savedStockInHistory);
   }, []);
 
-  const fetchProducts = async () => {
-    try {
-      const res = await axios.get('http://localhost:5001/api/products');
-      setProducts(res.data);
-    } catch (error) {
-      console.error("제품을 불러오는데 실패했습니다:", error);
-    }
+  useEffect(() => {
+    localStorage.setItem('products', JSON.stringify(products));
+    localStorage.setItem('inventory', JSON.stringify(inventory));
+    localStorage.setItem('usageHistory', JSON.stringify(usageHistory));
+    localStorage.setItem('stockInHistory', JSON.stringify(stockInHistory));
+  }, [products, inventory, usageHistory, stockInHistory]);
+
+  const addProduct = (newProduct) => {
+    setProducts([...products, { ...newProduct, id: Date.now() }]);
   };
 
-  const addProduct = async (product) => {
-    try {
-      await axios.post('http://localhost:5001/api/products', product);
-      fetchProducts(); // 제품 추가 후 목록 새로고침
-    } catch (error) {
-      console.error("제품 추가에 실패했습니다:", error);
+  const addInventory = (product, quantity) => {
+    const existingItem = inventory.find(item => item.id === product.id);
+    if (existingItem) {
+      setInventory(inventory.map(item => 
+        item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
+      ));
+    } else {
+      setInventory([...inventory, { ...product, quantity }]);
     }
+    setStockInHistory([...stockInHistory, { ...product, quantity, date: new Date() }]);
+  };
+
+  const updateInventory = (id, usedQuantity) => {
+    setInventory(prevInventory => 
+      prevInventory.map(item => 
+        item.id === id ? { ...item, quantity: Math.max(0, item.quantity - usedQuantity) } : item
+      )
+    );
+    const usedProduct = inventory.find(item => item.id === id);
+    setUsageHistory([...usageHistory, { ...usedProduct, quantity: -usedQuantity, date: new Date() }]);
+  };
+
+  const moveInventoryItem = (fromIndex, toIndex) => {
+    const newInventory = [...inventory];
+    const [movedItem] = newInventory.splice(fromIndex, 1);
+    newInventory.splice(toIndex, 0, movedItem);
+    setInventory(newInventory);
   };
 
   return (
-    <Container>
-      <Typography variant="h2" gutterBottom>
-        재고 관리 시스템
-      </Typography>
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <ProductForm addProduct={addProduct} />
-          <ProductList products={products} />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <InventoryChart products={products} />
-        </Grid>
-      </Grid>
-    </Container>
+    <div className="app">
+      <header className="app-header">
+        <h1>모모아이 재고 관리 시스템</h1>
+      </header>
+      <button onClick={() => setShowProductForm(!showProductForm)}>
+        {showProductForm ? '제품 추가 닫기' : '제품 추가'}
+      </button>
+      {showProductForm && <ProductForm addProduct={addProduct} />}
+      <button onClick={() => setShowStockInForm(!showStockInForm)}>
+        {showStockInForm ? '입고 닫기' : '입고'}
+      </button>
+      {showStockInForm && <StockInForm products={products} addInventory={addInventory} />}
+      <InventoryList 
+        inventory={inventory} 
+        updateInventory={updateInventory}
+      />
+      <UsageReport inventory={inventory} usageHistory={usageHistory} stockInHistory={stockInHistory} />
+    </div>
   );
 }
 
